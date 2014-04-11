@@ -8,8 +8,9 @@ using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using Enigma.Resources;
-using Enigma.Codecs;
+using Enigma.Ciphers;
 using System.Text.RegularExpressions;
+using Microsoft.Phone.Tasks;
 
 namespace Enigma
 {
@@ -50,6 +51,8 @@ namespace Enigma
             _ciphers.Add("Binary");
             _ciphers.Add("Hexadecimal");
             _ciphers.Add("ROT-13");
+            _ciphers.Add("Five Letter");
+            _ciphers.Add("Disemvowel");
         }
 
         #region Constructor
@@ -162,7 +165,7 @@ namespace Enigma
         {
             try
             {
-                ICodec codec = GetSelectedCipher();
+                ICipher codec = GetSelectedCipher();
                 if (codec != null)
                 {
                     CipherOutputTextBox.Text = codec.Encode(CipherInputTextBox.Text);
@@ -179,7 +182,7 @@ namespace Enigma
         {
             try
             {
-                ICodec codec = GetSelectedCipher();
+                ICipher codec = GetSelectedCipher();
                 if (codec != null)
                 {
                     CipherOutputTextBox.Text = codec.Decode(CipherInputTextBox.Text);
@@ -192,22 +195,72 @@ namespace Enigma
             }
         }
 
-        private ICodec GetSelectedCipher()
+        private ICipher GetSelectedCipher()
         {
             switch ((string)CipherListPicker.SelectedItem)
             {
                 case "ROT-13":
-                    return new RotationCodec(13);
+                    return new RotationCipher(13);
 
                 case "Binary":
-                    return new RadixCodec(2, 8);
+                    return GetBinaryCipher();
 
                 case "Hexadecimal":
-                    return new RadixCodec(16, 2);
+                    return GetHexadecimalCipher();
+
+                case "Stuffing":
+                    return GetStuffingCipher();
+
+                case "Disemvowel":
+                    return GetDisemvowelCipher();
 
                 default:
                     throw new InvalidOperationException("Unsupported cipher");
             }
+        }
+
+        private ICipher GetBinaryCipher()
+        {
+            AggregateCipher cipher = new AggregateCipher();
+            cipher.AddCipher(new RadixCipher(2, 8));
+            cipher.AddCipher(new GroupingCipher(8));
+
+            return cipher;
+        }
+
+        private ICipher GetHexadecimalCipher()
+        {
+            AggregateCipher cipher = new AggregateCipher();
+            cipher.AddCipher(new RadixCipher(16, 2));
+            cipher.AddCipher(new GroupingCipher(2));
+
+            return cipher;
+        }
+
+        private ICipher GetStuffingCipher()
+        {
+            AggregateCipher cipher = new AggregateCipher();
+            cipher.AddCipher(new StuffingCipher(1));
+            cipher.AddCipher(new GroupingCipher(5));
+
+            return cipher;
+        }
+
+        private ICipher GetDisemvowelCipher()
+        {
+            MapCipher cipher = new MapCipher(new Func<char, bool, string>((c, encode) =>
+            {
+                char[] charsToRemove = { 'a', 'e', 'i', 'o', 'u' };
+
+                if (encode && charsToRemove.Contains(Char.ToLower(c)))
+                {
+                    return string.Empty;
+                }
+
+                return c.ToString();
+            }));
+
+            return cipher;
         }
 
         private void OnClearInputButtonClick(object sender, RoutedEventArgs e)
@@ -218,6 +271,16 @@ namespace Enigma
         private void OnCopyOutputButtonClick(object sender, RoutedEventArgs e)
         {
             Clipboard.SetText(CipherOutputTextBox.Text);
+        }
+
+        private void OnSendEmailButtonClick(object sender, RoutedEventArgs e)
+        {
+            EmailComposeTask emailComposeTask = new EmailComposeTask();
+
+            emailComposeTask.Subject = "Message from Enigma";
+            emailComposeTask.Body = CipherOutputTextBox.Text;
+
+            emailComposeTask.Show();
         }
     }
 }

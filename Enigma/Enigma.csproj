@@ -94,9 +94,13 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="BaseConverter.cs" />
-    <Compile Include="Codecs\RadixCodec.cs" />
-    <Compile Include="Codecs\RotationCodec.cs" />
-    <Compile Include="ICodec.cs" />
+    <Compile Include="Ciphers\AggregateCipher.cs" />
+    <Compile Include="Ciphers\MapCipher.cs" />
+    <Compile Include="Ciphers\StuffingCipher.cs" />
+    <Compile Include="Ciphers\RadixCipher.cs" />
+    <Compile Include="Ciphers\GroupingCipher.cs" />
+    <Compile Include="Ciphers\RotationCipher.cs" />
+    <Compile Include="ICipher.cs" />
     <Compile Include="LocalizedStrings.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>

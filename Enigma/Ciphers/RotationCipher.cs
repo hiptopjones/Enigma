@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Enigma.Codecs
+namespace Enigma.Ciphers
 {
-    public class RotationCodec : ICodec
+    class RotationCipher : ICipher
     {
         private int _letterRotation;
 
-        public RotationCodec(int letterRotation)
+        public RotationCipher(int letterRotation)
         {
             _letterRotation = letterRotation;
         }
