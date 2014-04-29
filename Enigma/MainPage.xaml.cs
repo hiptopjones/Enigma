@@ -53,6 +53,7 @@ namespace Enigma
             _ciphers.Add("ROT-13");
             _ciphers.Add("Five Letter");
             _ciphers.Add("Disemvowel");
+            _ciphers.Add("Morse Code");
         }
 
         #region Constructor
@@ -213,6 +214,9 @@ namespace Enigma
 
                 case "Disemvowel":
                     return GetDisemvowelCipher();
+
+                case "Morse Code":
+                    return new MorseCodeCipher();
 
                 default:
                     throw new InvalidOperationException("Unsupported cipher");
